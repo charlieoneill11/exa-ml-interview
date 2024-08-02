@@ -2,7 +2,7 @@
 
 This is the starter repo for the onsight Exa ML interview! You will fork this and work on it yourself.
 
-Your goal is to train a model/system for document retrieval over the MS Marco dataset. In particular, at the end of this you will implement a class `Retriever`
+Your goal is to train a model/system for document retrieval over the [MS Marco](https://huggingface.co/datasets/mteb/msmarco-v2/viewer/queries) dataset. In particular, at the end of this you will implement a class `Retriever`
 
 ```python
 @dataclass
@@ -26,7 +26,7 @@ You are welcome to use any approach you want for this problem -- it will likely 
 1. search must return a result in <1 second (95% of the time)
 2. You will have access to a g5.4xlarge aws instance to do all the training on
 3. You are welcome to used pretrained LLMs in any capacity here, but you can't start with a pretrained embedding-specific model
-4. You should only train on the MS-Marco train set -- or any synthetic data you generate
+4. You should only train on the [MS-Marco](https://huggingface.co/datasets/mteb/msmarco-v2/viewer/queries) train set -- or any synthetic data you generate
 
 ## Evaluation
 
