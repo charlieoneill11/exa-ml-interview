@@ -8,13 +8,16 @@ import os
 import random
 import nltk
 from nltk.corpus import stopwords
+import argparse
 
+# Constants
 CORPUS_FRACTION = 0.001
 NUM_QUERIES = 1000
 RANDOM_SEED = 42
 
-nltk.download('punkt')
-nltk.download('stopwords')
+# Download NLTK data
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
 
 stop_words = set(stopwords.words('english'))
 
@@ -43,36 +46,36 @@ def prepare_evaluation_data():
         with open('corpus_id_to_index.json', 'w') as f:
             json.dump(corpus_id_to_index, f)
 
-    # filter entries in default to match sampled corpus
+    # filter default to match sampled corpus
     default_filtered = default.filter(lambda x: x['corpus-id'] in corpus_id_to_index)
 
-    # get 1000 queries
-    NUM_QUERIES = min(1000, len(default_filtered)) 
+    # select queries
+    NUM_QUERIES = min(1000, len(default_filtered))
     selected_queries = default_filtered.shuffle(seed=RANDOM_SEED).select(range(NUM_QUERIES))
-
+    
     query_ids = set(selected_queries['query-id'])
     queries_filtered = queries.filter(lambda x: x['_id'] in query_ids)
     
     return corpus_sample, queries_filtered, selected_queries, corpus_id_to_index
 
-def calculate_recall_at_1(similarities, query_ids, corpus_ids, corpus_id_to_index):
-    top_indices = similarities.argmax(axis=1)
+def calculate_recall_at_n(similarities, query_ids, corpus_ids, corpus_id_to_index, n):
+    top_indices = np.argsort(-similarities, axis=1)[:, :n]
     correct = 0
     for i, query_id in enumerate(query_ids):
-        predicted_corpus_id = list(corpus_id_to_index.keys())[top_indices[i]]
-        if predicted_corpus_id == corpus_ids[i]:
+        predicted_corpus_ids = [list(corpus_id_to_index.keys())[idx] for idx in top_indices[i]]
+        if corpus_ids[i] in predicted_corpus_ids:
             correct += 1
     return correct / len(query_ids)
 
-def main():
+def main(n):
     random.seed(RANDOM_SEED)
     np.random.seed(RANDOM_SEED)
 
     corpus_sample, queries_filtered, selected_queries, corpus_id_to_index = prepare_evaluation_data()
 
     print("Preprocessing corpus...")
-    texts = corpus_sample['text']#.tolist()
-    print(len(texts))
+    texts = corpus_sample['text']
+    print(f"Corpus size: {len(texts)}")
     corpus_texts = [preprocess_text(text) for text in tqdm(texts)]
 
     print("Calculating TF-IDF for corpus...")
@@ -88,10 +91,14 @@ def main():
     print("Calculating similarities...")
     similarities = cosine_similarity(query_tfidf, corpus_tfidf)
 
-    print("Calculating recall@1...")
-    recall_at_1 = calculate_recall_at_1(similarities, selected_queries['query-id'], selected_queries['corpus-id'], corpus_id_to_index)
+    print(f"Calculating recall@{n}...")
+    recall_at_n = calculate_recall_at_n(similarities, selected_queries['query-id'], selected_queries['corpus-id'], corpus_id_to_index, n)
 
-    print(f"Recall@1: {recall_at_1:.4f}")
+    print(f"Recall@{n}: {recall_at_n:.4f}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Calculate Recall@N for TF-IDF based retrieval.')
+    parser.add_argument('--n', type=int, default=1, help='N value for Recall@N calculation')
+    args = parser.parse_args()
+    
+    main(args.n)

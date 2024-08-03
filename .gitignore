@@ -12,3 +12,6 @@ src/exa_ml_interview/d
 
 # Anything ending in json
 *.json
+
+# Anything ending in .ipynb
+*.ipynb
