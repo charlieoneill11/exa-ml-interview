@@ -158,3 +158,6 @@ if __name__ == "__main__":
 
     with open('dev_losses.json', 'w') as f:
         json.dump(dev_losses, f)
+
+    with open('dev_recalls.json', 'w') as f:
+        json.dump(dev_recalls, f)

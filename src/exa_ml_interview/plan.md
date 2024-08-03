@@ -3,11 +3,11 @@
 ## Overview
 
 * Used 10% of data for training, 1000 queries for val set during training
-    * Still not convinced I created this very efficiently; if I'd run it for the whole thing it would have taken over 4 hours to create
+    * Still not convinced I created this very efficiently; if I'd run the dataset creation for the whole thing it would have taken over 4 hours to create (due largely to the index, not tokenisation or anything)
     * I think this is due to the way the specific marco dataset is structured in this particular HF repo; I would have liked to use the Microsoft one because you don't have to index in from different splits and I could have grabbed everything at once without filtering (although again, there might be a better way to do this that I'm missing)
 * Trained a bi-encoder with `bert-large-uncased` as the basis for the model. I know Will/Michael said to use `bert-large`, but in retrospect should have used `bert-tiny` since I was only here for half a day. Would have allowed me to iterate faster.
     * Slowed me down during training (although this was more bottlenecked by creating the data index in the first place, as discussed above)
-    * The main place it slowed me down was in creating embeddings; I played around with a lot of different batch sizes but even with an A100 it took over two hours to create embeddings for the whole corpus for my test set that I compared to other methods (e.g. TF-IDF)
+    * The main place it slowed me down was in creating embeddings; I played around with a lot of different batch sizes but even with an A100 it took over 2.5 hours to create embeddings for the whole corpus for my test set that I compared to other methods (e.g. TF-IDF)
     * I've uploaded my trained model to huggingface at `charlieoneill/exa-int` (it's called `biencoder_model.pth`)
 * Originally trained using four sampled hard negative documents, but as per Michael's suggestion swapped to use the positive documents of the other samples in the batch as negatives
     * This basically ends up with a CLIP-style loss where you want your similarity matrix to be 1 on the diagonal and 0 elsewhere
@@ -19,7 +19,7 @@ Recall@1 on dev set during training (batch size 32 = 31 negatives per positive, 
 
 ![dev_recall.png](dev_recall.png)
 
-Training loss and dev loss:
+Training loss and dev loss (again starting at epoch 2):
 
 ![train_val_loss.png](train_val_loss.png)
 
